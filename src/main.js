@@ -2,6 +2,7 @@ import GUI from 'lil-gui'
 import './style.css'
 import * as THREE from "three"
 import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 
 
 
@@ -40,6 +41,23 @@ const axesHelper = new THREE.AxesHelper(4)
 const pointLightHelper = new THREE.PointLightHelper( pointLight, 0.3 );
 
 
+
+/**
+ * External Models
+ */
+const gltfLoader = new GLTFLoader()
+gltfLoader.load(
+  '/models/SphereBush.glb',
+  (gltf) => {
+    const bush = gltf.scene
+    const scale = 0.2
+    bush.scale.set(scale, scale, scale)
+    bush.position.set(0.4, 0.1, 2)
+    scene.add(bush)
+  }
+)
+
+
 /**
  * Textures
  */
@@ -75,30 +93,53 @@ groundMaterial.side = THREE.DoubleSide
 /**
  * Geometry
  */
-const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial())
-cube.position.y = 0.51
-const groundGeometry = new THREE.PlaneGeometry(10, 10)
+const groundGeometry = new THREE.PlaneGeometry(20, 20)
 groundGeometry.setAttribute('uv2', new THREE.BufferAttribute(groundGeometry.attributes.uv.array), 2)
 const ground = new THREE.Mesh(groundGeometry, groundMaterial)
 ground.rotation.x = -Math.PI * 0.5
 
-
+// House Geometry
+const houseCube = new THREE.Mesh(new THREE.BoxGeometry(4, 3, 4), new THREE.MeshStandardMaterial({ color: 0xd3715e}))
+houseCube.position.y = 3 / 2 + 0.01
+const houseRoof = new THREE.Mesh(new THREE.ConeGeometry(2 * Math.sqrt(2) + 0.5, 1.5, 4), new THREE.MeshStandardMaterial({ color: 0xa51c00 }))
+houseRoof.position.y = 3 + 1.5/2
+houseRoof.rotation.y = Math.PI * 0.25
 
 /**
  * Groups
  */
+const house = new THREE.Group()
+house.add(houseCube)
+house.add(houseRoof)
+const graves = new THREE.Group()
 
+
+/**
+ * Add Graves
+ */
+const graveMaterial = new THREE.MeshStandardMaterial({ color: 0x666666 })
+const graveGeometry = new THREE.BoxGeometry(0.5, 0.8, 0.2)
+for(let i = 0; i < 30; i++){
+  const grave = new THREE.Mesh(graveGeometry, graveMaterial)
+  const angle = Math.random() * Math.PI * 2
+  const radius = 3.4 + Math.random() * 6
+  grave.position.set(Math.sin(angle) * radius, 0.3, Math.cos(angle) * radius)
+  grave.rotation.y = (Math.random() - 0.5) * 0.4
+  grave.rotation.x = (Math.random() - 0.5) * 0.3
+  graves.add(grave)
+}
 
 /**
  * Scene Adds
  */
 scene.add(camera)
-scene.add(cube)
+scene.add(house)
 scene.add(ambientLight)
 scene.add(pointLight)
 scene.add(axesHelper)
 scene.add(ground)
 scene.add(pointLightHelper)
+scene.add(graves)
 
 
 
